@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "quantal64"
+
+  config.vm.define :lxc do |lxc_config|
+
+    forward_port = -> guest_port, host_port = guest_port {
+      lxc_config.vm.network :forwarded_port,
+        guest: guest_port,
+        host: host_port
+    }
+    
+    forward_port[80, 8080]    # nginx/apache
+    forward_port[8080, 9090]  # java server
+    forward_port[3000]        # rails
+
+  end
+
+  config.vm.provider :lxc do |lxc|
+    # Same effect as as 'customize ["modifyvm", :id, "--memory", "1024"]' for VirtualBox
+    lxc.customize 'cgroup.memory.limit_in_bytes', '1024M'
+  end
+
+end

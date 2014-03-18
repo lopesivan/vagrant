@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "precise32"
+
+  forward_port = -> guest_port, host_port = guest_port {
+    config.vm.network :forwarded_port,
+      guest: guest_port,
+      host: host_port
+  }
+
+  forward_port[80, 8080]    # nginx/apache
+  forward_port[8080, 9090]  # java server
+  forward_port[3000]        # rails
+
+  # VirtualBox:
+  # 
+  config.vm.provider :virtualbox do |vb|
+    # Don't boot with headless mode
+    #vb.gui = true
+  
+    # Use VBoxManage to customize the VM. For example to change memory:
+    vb.customize ["modifyvm", :id, "--memory", "512"]
+   end
+
+   config.vm.provision "shell", path: "provision.sh"
+
+#  config.vm.provision :chef_solo do |chef|
+#    chef.cookbooks_path = "cookbooks"
+#    chef.add_recipe "apache2"
+#    chef.add_recipe "developer"
+#    chef.add_recipe "nginx"
+#    chef.json = { :apache => { :default_site_enabled => true } }
+#  end
+
+end
+
